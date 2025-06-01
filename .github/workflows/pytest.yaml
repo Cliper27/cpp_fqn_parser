@@ -1,5 +1,5 @@
 # .github/workflows/pytest.yml
-name: Run Pytest
+name: Pytest
 
 on:
   pull_request:
