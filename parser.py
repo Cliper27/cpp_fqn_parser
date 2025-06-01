@@ -11,20 +11,10 @@ class Scope:
 
 
 @dataclass
-class ReturnType:
-    name: str
-    constant: bool = False
-    volatile: bool = False
-    pointer: bool = False
-    reference: bool = False
-    template: Optional[str] = None
-
-
-@dataclass
 class FQN:
     name: str
     full_name: str
-    return_type: Optional[ReturnType] = None
+    return_type: Optional[str] = None
     args: Optional[List[str]] = None
     scopes: Optional[List[Scope]] = None
     template: Optional[str] = None
@@ -62,8 +52,16 @@ class Parser:
         fqn_args: List[str] = self.parse_args()
         fqn_template: Optional[str] = self.parse_template()
         fqn_name: str = self.parse_name()
-        fqn_scopes: Optional[List[Scope]] = self.parse_scopes()  # TODO
-        return fqn_qualifiers, fqn_args, fqn_template, fqn_name, fqn_scopes  # TODO
+        fqn_scopes: Optional[List[Scope]] = self.parse_scopes()
+        fqn_return_type: Optional[str] = self.parse_return_type()
+        return FQN(name=fqn_name,
+                   full_name=self.string,
+                   return_type=fqn_return_type,
+                   args=fqn_args,
+                   scopes=fqn_scopes,
+                   template=fqn_template,
+                   constant=fqn_qualifiers["constant"],
+                   volatile=fqn_qualifiers["volatile"])
 
     def parse_qualifiers(self) -> Dict[str, bool]:
         if not self.match("MEMBER"):
@@ -154,95 +152,40 @@ class Parser:
 
         return ''.join(tokens[::-1])
 
-    def parse_scopes(self):
-        # TODO
-        ...
+    def parse_scopes(self) -> Optional[List[Scope]]:
+        if not self.match("SCOPE"):
+            return None
 
+        scopes: List[Scope] = []
 
-    # def parse_return_type(self) -> ReturnType:
-    #     constant = False
-    #     volatile = False
-    #     pointer = False
-    #     reference = False
-    #
-    #     if not self.match("MEMBER"):
-    #         raise SyntaxError(f"First token must be a MEMBER, "
-    #                           f"but '{self.peek().type_ if self.peek() else 'None'}' found.")
-    #
-    #     token = self.consume("MEMBER")
-    #     constant = token.value == "const"
-    #     volatile = token.value == "volatile"
-    #
-    #
-    #     return ReturnType(
-    #         name=name,
-    #         constant=constant,
-    #         volatile=volatile,
-    #         pointer=pointer,
-    #         reference=reference,
-    #         template=template_str
-    #     )
+        while not self.match("WHITESPACE"):
+            self.consume("SCOPE")
+            template: Optional[str] = self.parse_nested_templates() if self.match("TEMPLATE_END") else None
+            token: Token = self.consume("MEMBER")
 
+            scopes.append(Scope(token.value, template))
 
-# def parse_return_type(self) -> ReturnType:
-#     constant = False
-#     volatile = False
-#     pointer = False
-#     reference = False
-#
-#     # handle leading qualifiers
-#     while self.match("CONSTANT") or self.match("VOLATILE"):
-#         if self.match("CONSTANT"):
-#             self.consume("CONSTANT")
-#             constant = True
-#         elif self.match("VOLATILE"):
-#             self.consume("VOLATILE")
-#             volatile = True
-#
-#     # parse scoped name (e.g., std::vector)
-#     name_parts = [self.consume("MEMBER").value]
-#     while self.match("SCOPE"):
-#         self.consume("SCOPE")
-#         name_parts.append(self.consume("MEMBER").value)
-#     name = "::".join(name_parts)
-#
-#     # optional template
-#     template_str = None
-#     if self.match("TEMPLATE_START"):
-#         start_pos = self.pos
-#         depth = 0
-#         while self.pos < len(self.tokens):
-#             if self.match("TEMPLATE_START"):
-#                 depth += 1
-#             elif self.match("TEMPLATE_END"):
-#                 depth -= 1
-#                 if depth == 0:
-#                     self.pos += 1  # consume final >
-#                     break
-#             self.pos += 1
-#         template_str = "..."  # placeholder for full parser
-#
-#     # pointer/reference qualifiers
-#     while self.match("POINTER") or self.match("REFERENCE"):
-#         if self.match("POINTER"):
-#             self.consume("POINTER")
-#             pointer = True
-#         elif self.match("REFERENCE"):
-#             self.consume("REFERENCE")
-#             reference = True
-#
-#     return ReturnType(
-#         name=name,
-#         constant=constant,
-#         volatile=volatile,
-#         pointer=pointer,
-#         reference=reference,
-#         template=template_str
-#     )
+        return scopes
+
+    def parse_return_type(self) -> Optional[str]:
+        if self.match("WHITESPACE"):
+            self.consume("WHITESPACE")
+
+        if not self.peek():
+            return None
+
+        return_type: List[str] = []
+        while self.peek():
+            token = self.consume()
+            return_type.append(token.value)
+
+        return ''.join(return_type[::-1])
 
 
 if __name__ == '__main__':
-    fqn = r"int one_3hello0::tconstwo<mytemplate>::three<Test::type<T * >::Hello>(const four &, int a) volatile"
+    fqn = (r"test1::test2< T *> "
+           r"one_3hello0::tconstwo< mytemplate>::three<Test::type<T * >::Hello>"
+           r"(const four &, int a) volatile")
     parser = Parser(fqn)
     parsed_fqn = parser.parse()
-    print(fqn)
+    print(parsed_fqn)
