@@ -6,37 +6,92 @@ from .scope import Scope
 
 
 class Parser:
+    """
+    Parses a string representation of a fully qualified name (FQN) into a structured FQN object.
+
+    This parser consumes tokens produced by a `Tokenizer` and reconstructs:
+      - the symbol name
+      - its argument list
+      - template definitions
+      - qualifier flags (const, volatile)
+      - return type
+      - and any enclosing scopes
+
+    Attributes:
+        string (str): The original input string.
+        tokenizer (Tokenizer): Tokenizer instance processing the input.
+        tokens (List[Token]): All parsed tokens from the input.
+        __cursor (int): Current index in the token list (reverse parsing).
+    """
     def __init__(self, string: str) -> None:
+        """
+        Initializes the parser and tokenizes the input string.
+
+        Args:
+            string (str): The string to parse.
+        """
         self.string: str = string
         self.tokenizer: Tokenizer = Tokenizer(string)
         self.tokens: List[Token] = list(self.tokenizer.get_all_tokens())
-        self.cursor: int = len(self.tokens) - 1
-        self._has_args: bool = True
+        self.__cursor: int = len(self.tokens) - 1
 
-    def peek(self) -> Optional[Token]:
-        return self.tokens[self.cursor] if self.cursor >= 0 else None
+    def _peek(self) -> Optional[Token]:
+        """
+        Looks at the current token without consuming it.
 
-    def consume(self, expected_type: Optional[str] = None) -> Token:
-        token: Optional[Token] = self.peek()
+        Returns:
+            Optional[Token]: The current token, or None if at the start.
+        """
+        return self.tokens[self.__cursor] if self.__cursor >= 0 else None
+
+    def _consume(self, expected_type: Optional[str] = None) -> Token:
+        """
+        Consumes and returns the current token, optionally verifying its type.
+
+        Args:
+            expected_type (Optional[str]): Expected token type (if any).
+
+        Returns:
+            Token: The consumed token.
+
+        Raises:
+            SyntaxError: If the token type doesn't match or input ends unexpectedly.
+        """
+        token: Optional[Token] = self._peek()
         if token is None:
             raise SyntaxError(f"Unexpected end of input, expected: '{expected_type}'")
         if expected_type and token.type_ != expected_type:
             raise SyntaxError(f"Expected token type '{token.type_}' with value '{token.value}'. "
                               f"Expected type: '{expected_type}'")
-        self.cursor -= 1
+        self.__cursor -= 1
         return token
 
-    def match(self, token_type: str) -> bool:
-        token = self.peek()
+    def _match(self, token_type: str) -> bool:
+        """
+        Checks if the current token matches a given type.
+
+        Args:
+            token_type (str): The token type to check.
+
+        Returns:
+            bool: True if the current token matches the type, False otherwise.
+        """
+        token = self._peek()
         return token is not None and token.type_ == token_type
 
     def parse(self) -> FQN:
-        fqn_qualifiers: Dict[str, bool] = self.parse_qualifiers()
-        fqn_args: Optional[List[str]] = self.parse_args()
-        fqn_template: Optional[str] = self.parse_template()
-        fqn_name: str = self.parse_name()
-        fqn_scopes: Optional[List[Scope]] = self.parse_scopes()
-        fqn_return_type: Optional[str] = self.parse_return_type()
+        """
+        Parses the entire input string into an FQN object.
+
+        Returns:
+            FQN: The parsed fully qualified name structure.
+        """
+        fqn_qualifiers: Dict[str, bool] = self._parse_qualifiers()
+        fqn_args: Optional[List[str]] = self._parse_args()
+        fqn_template: Optional[str] = self._parse_template()
+        fqn_name: str = self._parse_name()
+        fqn_scopes: Optional[List[Scope]] = self._parse_scopes()
+        fqn_return_type: Optional[str] = self._parse_return_type()
         return FQN(name=fqn_name,
                    full_name=self.string,
                    return_type=fqn_return_type,
@@ -46,11 +101,17 @@ class Parser:
                    constant=fqn_qualifiers["constant"],
                    volatile=fqn_qualifiers["volatile"])
 
-    def parse_qualifiers(self) -> Dict[str, bool]:
-        if not self.match("MEMBER"):
+    def _parse_qualifiers(self) -> Dict[str, bool]:
+        """
+        Parses trailing qualifiers like 'const' and 'volatile'.
+
+        Returns:
+            Dict[str, bool]: A dictionary with boolean flags: {'constant': bool, 'volatile': bool}
+        """
+        if not self._match("MEMBER"):
             return {"constant": False, "volatile": False}
 
-        token: Token = self.consume("MEMBER")
+        token: Token = self._consume("MEMBER")
         constant: bool = token.value == "const"
         volatile: bool = token.value == "volatile"
 
@@ -58,40 +119,46 @@ class Parser:
             raise SyntaxError("FQN has no arguments. "
                               f"Last token is '{token.value}' but should be 'const', 'volatile' or ')'.")
 
-        if not self.match("WHITESPACE"):
-            _temp: Optional[Token] = self.peek()
+        if not self._match("WHITESPACE"):
+            _temp: Optional[Token] = self._peek()
             raise SyntaxError(f"Expected WHITESPACE, found '{_temp.type_ if _temp else None}'")
-        self.consume("WHITESPACE")
+        self._consume("WHITESPACE")
 
-        if not self.match("MEMBER"):
+        if not self._match("MEMBER"):
             return {"constant": constant, "volatile": volatile}
 
-        token = self.consume("MEMBER")
+        token = self._consume("MEMBER")
         constant = token.value == "const" if not constant else constant
         volatile = token.value == "volatile" if not volatile else volatile
 
-        if not self.match("WHITESPACE"):
-            _temp = self.peek()
+        if not self._match("WHITESPACE"):
+            _temp = self._peek()
             raise SyntaxError(f"Expected WHITESPACE, found '{_temp.type_ if _temp else None}'")
-        self.consume("WHITESPACE")
+        self._consume("WHITESPACE")
 
         return {"constant": constant, "volatile": volatile}
 
-    def parse_args(self) -> Optional[List[str]]:
-        if not self.match("PARENTHESIS_END"):
-            _temp: Optional[Token] = self.peek()
+    def _parse_args(self) -> Optional[List[str]]:
+        """
+        Parses function arguments inside parentheses.
+
+        Returns:
+            Optional[List[str]]: The list of argument strings, or None if no arguments found.
+        """
+        if not self._match("PARENTHESIS_END"):
+            _temp: Optional[Token] = self._peek()
             raise SyntaxError(f"Expected ')', but found {_temp.value if _temp else None}")
 
-        self.consume("PARENTHESIS_END")
+        self._consume("PARENTHESIS_END")
         args_list: List[List[str]] = [[]]
         counter: int = 0
-        while not self.match("PARENTHESIS_START"):
-            if self.match("SEPARATOR"):
+        while not self._match("PARENTHESIS_START"):
+            if self._match("SEPARATOR"):
                 counter += 1
                 args_list.append([])
-                self.consume("SEPARATOR")
-            args_list[counter].append(self.consume().value)
-        self.consume("PARENTHESIS_START")
+                self._consume("SEPARATOR")
+            args_list[counter].append(self._consume().value)
+        self._consume("PARENTHESIS_START")
 
         args: List[str] = [''.join(arg[::-1]) for arg in args_list]
 
@@ -100,37 +167,61 @@ class Parser:
 
         return args[::-1]
 
-    def parse_template(self) -> Optional[str]:
-        if self.match("WHITESPACE"):
-            self.consume("WHITESPACE")
+    def _parse_template(self) -> Optional[str]:
+        """
+        Parses template type parameters if present.
+
+        Returns:
+            Optional[str]: The raw template string, or None.
+        """
+        if self._match("WHITESPACE"):
+            self._consume("WHITESPACE")
 
         template: Optional[str] = None
-        if self.match("TEMPLATE_END"):
-            template = self.parse_nested_templates()
+        if self._match("TEMPLATE_END"):
+            template = self._parse_nested_templates()
 
         return template
 
-    def parse_name(self) -> str:
-        if self.match("WHITESPACE"):
-            self.consume("WHITESPACE")
+    def _parse_name(self) -> str:
+        """
+        Parses the function or symbol name.
 
-        if not self.match("MEMBER"):
-            _temp: Optional[Token] = self.peek()
+        Returns:
+            str: The unqualified name.
+
+        Raises:
+            SyntaxError: If a valid member token is not found.
+        """
+        if self._match("WHITESPACE"):
+            self._consume("WHITESPACE")
+
+        if not self._match("MEMBER"):
+            _temp: Optional[Token] = self._peek()
             raise SyntaxError(f"Expected 'MEMBER', but found '{_temp.type_ if _temp else 'None'}'")
 
-        name: str = self.consume("MEMBER").value
+        name: str = self._consume("MEMBER").value
 
         return name
 
-    def parse_nested_templates(self) -> str:
-        if not self.match("TEMPLATE_END"):
-            _temp: Optional[Token] = self.peek()
+    def _parse_nested_templates(self) -> str:
+        """
+        Parses a possibly nested set of template tokens.
+
+        Returns:
+            str: The raw template string (reversed back to original order).
+
+        Raises:
+            SyntaxError: If improper template structure is found.
+        """
+        if not self._match("TEMPLATE_END"):
+            _temp: Optional[Token] = self._peek()
             raise SyntaxError(f"Expected '>', but found '{_temp.value if _temp else 'None'}'")
 
-        tokens: List[str] = [self.consume("TEMPLATE_END").value]
+        tokens: List[str] = [self._consume("TEMPLATE_END").value]
         depth: int = 1
         while depth > 0:
-            token: Token = self.consume()
+            token: Token = self._consume()
             tokens.append(token.value)
             if token.type_ == "TEMPLATE_END":
                 depth += 1
@@ -139,31 +230,43 @@ class Parser:
 
         return ''.join(tokens[::-1])
 
-    def parse_scopes(self) -> Optional[List[Scope]]:
-        if not self.match("SCOPE"):
+    def _parse_scopes(self) -> Optional[List[Scope]]:
+        """
+        Parses namespace or class scopes, if present.
+
+        Returns:
+            Optional[List[Scope]]: A list of Scope objects, or None if no scopes found.
+        """
+        if not self._match("SCOPE"):
             return None
 
         scopes: List[Scope] = []
 
-        while not self.match("WHITESPACE") and self.peek():
-            self.consume("SCOPE")
-            template: Optional[str] = self.parse_nested_templates() if self.match("TEMPLATE_END") else None
-            token: Token = self.consume("MEMBER")
+        while not self._match("WHITESPACE") and self._peek():
+            self._consume("SCOPE")
+            template: Optional[str] = self._parse_nested_templates() if self._match("TEMPLATE_END") else None
+            token: Token = self._consume("MEMBER")
 
             scopes.append(Scope(token.value, template))
 
         return scopes[::-1]
 
-    def parse_return_type(self) -> Optional[str]:
-        if self.match("WHITESPACE"):
-            self.consume("WHITESPACE")
+    def _parse_return_type(self) -> Optional[str]:
+        """
+        Parses any tokens remaining at the start of the string as a return type.
 
-        if not self.peek():
+        Returns:
+            Optional[str]: The return type as a string, or None if not found.
+        """
+        if self._match("WHITESPACE"):
+            self._consume("WHITESPACE")
+
+        if not self._peek():
             return None
 
         return_type: List[str] = []
-        while self.peek():
-            token = self.consume()
+        while self._peek():
+            token = self._consume()
             return_type.append(token.value)
 
         return ''.join(return_type[::-1])
