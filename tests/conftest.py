@@ -74,7 +74,7 @@ def tokenizer_expected() -> List[Token]:
 @pytest.fixture
 def parser_expected():
     scopes = [
-        Scope(name="one_3hello0", template=None),
+        Scope(name="on_3hello0", template=None),
         Scope(name="tconstwo", template="<mytemplate>")
     ]
     return FQN(name="three",
