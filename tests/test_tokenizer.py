@@ -1,6 +1,6 @@
 from typing import List
 
-from tokenizer import Tokenizer, Token
+from src.tokenizer import Tokenizer, Token
 
 
 def test_simple_fqn(simple_fqn_input: str, simple_fqn_expected: List[Token]) -> None:

@@ -1,25 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional, Union, List, Dict
+from typing import Optional, List, Dict
 
-from tokenizer import Tokenizer, Token
-
-
-@dataclass
-class Scope:
-    name: str
-    template: Optional[str] = None
-
-
-@dataclass
-class FQN:
-    name: str
-    full_name: str
-    return_type: Optional[str] = None
-    args: Optional[List[str]] = None
-    scopes: Optional[List[Scope]] = None
-    template: Optional[str] = None
-    constant: bool = False
-    volatile: bool = False
+from .tokenizer import Tokenizer, Token
+from .fqn import FQN
+from .scope import Scope
 
 
 class Parser:
@@ -180,12 +163,3 @@ class Parser:
             return_type.append(token.value)
 
         return ''.join(return_type[::-1])
-
-
-if __name__ == '__main__':
-    fqn = (r"test1::test2< T *> "
-           r"one_3hello0::tconstwo< mytemplate>::three<Test::type<T * >::Hello>"
-           r"(const four &, int a) volatile")
-    parser = Parser(fqn)
-    parsed_fqn = parser.parse()
-    print(parsed_fqn)

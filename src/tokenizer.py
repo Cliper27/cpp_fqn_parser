@@ -1,9 +1,11 @@
 import re
 from typing import Optional, Pattern, Match, List, Tuple
 from collections.abc import Iterator
-from dataclasses import dataclass
 
-SPEC: List[Tuple[Pattern[str], str]] = [
+from .token import Token
+
+
+_SPEC: List[Tuple[Pattern[str], str]] = [
     (re.compile(r"^\s+"), "WHITESPACE"),
     (re.compile(r"^::"), "SCOPE"),
     (re.compile(r"^<"), "TEMPLATE_START"),
@@ -15,15 +17,6 @@ SPEC: List[Tuple[Pattern[str], str]] = [
     (re.compile(r"^,"), "SEPARATOR"),
     (re.compile(r"^[a-zA-Z_]\w*"), "MEMBER"),
 ]
-
-
-@dataclass
-class Token:
-    type_: str
-    value: str
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, Token) and self.type_ == other.type_ and self.value == other.value
 
 
 class Tokenizer:
@@ -43,7 +36,7 @@ class Tokenizer:
 
         string: str = self.string[self.cursor:]
 
-        for pattern, token_type in SPEC:
+        for pattern, token_type in _SPEC:
             token_value: Optional[str] = self._match(pattern, string)
 
             if token_value is None:
@@ -65,9 +58,3 @@ class Tokenizer:
         self.cursor = 0
         while token := self.get_next_token():
             yield token
-
-
-if __name__ == '__main__':
-    tokenizer: Tokenizer = Tokenizer(r"int one_3hello0::tconstwo<mytemplate>::three(const four &) volatile")
-    for tok in tokenizer.get_all_tokens():
-        print(tok)

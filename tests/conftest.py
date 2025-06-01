@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from tokenizer import Token
+from src.tokenizer import Token
 
 
 @pytest.fixture
