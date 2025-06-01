@@ -1,25 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional, Union, List, Dict
+from typing import Optional, List, Dict
 
-from tokenizer import Tokenizer, Token
-
-
-@dataclass
-class Scope:
-    name: str
-    template: Optional[str] = None
-
-
-@dataclass
-class FQN:
-    name: str
-    full_name: str
-    return_type: Optional[str] = None
-    args: Optional[List[str]] = None
-    scopes: Optional[List[Scope]] = None
-    template: Optional[str] = None
-    constant: bool = False
-    volatile: bool = False
+from .tokenizer import Tokenizer, Token
+from .fqn import FQN
+from .scope import Scope
 
 
 class Parser:
@@ -49,7 +32,7 @@ class Parser:
 
     def parse(self) -> FQN:
         fqn_qualifiers: Dict[str, bool] = self.parse_qualifiers()
-        fqn_args: List[str] = self.parse_args()
+        fqn_args: Optional[List[str]] = self.parse_args()
         fqn_template: Optional[str] = self.parse_template()
         fqn_name: str = self.parse_name()
         fqn_scopes: Optional[List[Scope]] = self.parse_scopes()
@@ -94,7 +77,7 @@ class Parser:
 
         return {"constant": constant, "volatile": volatile}
 
-    def parse_args(self) -> List[str]:
+    def parse_args(self) -> Optional[List[str]]:
         if not self.match("PARENTHESIS_END"):
             _temp: Optional[Token] = self.peek()
             raise SyntaxError(f"Expected ')', but found {_temp.value if _temp else None}")
@@ -111,6 +94,10 @@ class Parser:
         self.consume("PARENTHESIS_START")
 
         args: List[str] = [''.join(arg[::-1]) for arg in args_list]
+
+        if len(args) == 1 and not args[0]:
+            return None
+
         return args[::-1]
 
     def parse_template(self) -> Optional[str]:
@@ -158,14 +145,14 @@ class Parser:
 
         scopes: List[Scope] = []
 
-        while not self.match("WHITESPACE"):
+        while not self.match("WHITESPACE") and self.peek():
             self.consume("SCOPE")
             template: Optional[str] = self.parse_nested_templates() if self.match("TEMPLATE_END") else None
             token: Token = self.consume("MEMBER")
 
             scopes.append(Scope(token.value, template))
 
-        return scopes
+        return scopes[::-1]
 
     def parse_return_type(self) -> Optional[str]:
         if self.match("WHITESPACE"):
@@ -180,12 +167,3 @@ class Parser:
             return_type.append(token.value)
 
         return ''.join(return_type[::-1])
-
-
-if __name__ == '__main__':
-    fqn = (r"test1::test2< T *> "
-           r"one_3hello0::tconstwo< mytemplate>::three<Test::type<T * >::Hello>"
-           r"(const four &, int a) volatile")
-    parser = Parser(fqn)
-    parsed_fqn = parser.parse()
-    print(parsed_fqn)
