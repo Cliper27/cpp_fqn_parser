@@ -146,8 +146,7 @@ class Parser:
             Optional[List[str]]: The list of argument strings, or None if no arguments found.
         """
         if not self._match("PARENTHESIS_END"):
-            _temp: Optional[Token] = self._peek()
-            raise SyntaxError(f"Expected ')', but found {_temp.value if _temp else None}")
+            return None
 
         self._consume("PARENTHESIS_END")
         args_list: List[List[str]] = [[]]
