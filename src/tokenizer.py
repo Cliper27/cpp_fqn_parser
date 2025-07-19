@@ -4,6 +4,19 @@ from collections.abc import Iterator
 
 from .token import Token
 
+OPERATORS: List[str] = ['+', '-', '/', '*', '%',
+                        '++', '--',
+                        '<', '>', '<=', '>=', '==', '!=',
+                        '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=',
+                        '<<', '>>', '&', '^', '~', '|',
+                        '&&', '||', '!',
+                        '->', '[]',
+                        '=',
+                        '()', ',']
+
+SORTED_OPERATORS: List[str] = sorted(OPERATORS, key=len, reverse=True)
+
+_OPERATOR_PREFIX_RE = re.compile(r"^operator\b\s*")
 
 _SPEC: List[Tuple[Pattern[str], str]] = [
     (re.compile(r"^\s+"), "WHITESPACE"),
@@ -27,6 +40,7 @@ class Tokenizer:
         string (str): The input string to tokenize.
         __cursor (int): Internal cursor tracking the current position in the input string.
     """
+
     def __init__(self, string: str) -> None:
         """
         Initializes the tokenizer with the input string.
@@ -61,15 +75,45 @@ class Tokenizer:
 
         string: str = self.string[self.__cursor:]
 
+        token = self.get_operator(string)
+        if token:
+            return token
+
         for pattern, token_type in _SPEC:
             token_value: Optional[str] = self._match(pattern, string)
-
-            if token_value is None:
-                continue
-
-            return Token(token_type, token_value)
+            if token_value is not None:
+                return Token(token_type, token_value)
 
         raise SyntaxError(f"Unexpected token '{string[0]}'")
+
+    def get_operator(self, string: str) -> Optional[Token]:
+        """
+        Attempts to match and extract a C++ operator overload token from the beginning of the input string.
+
+        This method detects the 'operator' keyword as a whole word, optionally followed by whitespace
+        and a valid C++ operator symbol (e.g., '==', '[]', '+', etc.). If a match is found, it consumes
+        the corresponding characters from the input and returns an OPERATOR token. If only the 'operator'
+        keyword is matched without a valid symbol, a MEMBER token for 'operator' is returned.
+
+        Args:
+            string (str): The remaining input string to check for an operator overload.
+
+        Returns:
+            Optional[Token]: A Token of type 'OPERATOR' or 'MEMBER' if matched, or None if no match is found.
+        """
+        match = _OPERATOR_PREFIX_RE.match(string)
+        if not match:
+            return None
+
+        prefix_len = match.end()
+        remainder = string[prefix_len:]
+        op_symbol = _match_operator_symbol(remainder)
+        if op_symbol:
+            self.__cursor += prefix_len + len(op_symbol)
+            return Token("OPERATOR", f"operator{op_symbol}")
+        else:
+            self.__cursor += prefix_len
+            return Token("MEMBER", "operator")
 
     def _match(self, pattern: str | Pattern[str], string: str) -> Optional[str]:
         """
@@ -99,3 +143,23 @@ class Tokenizer:
         self.__cursor = 0
         while token := self.get_next_token():
             yield token
+
+
+def _match_operator_symbol(string: str) -> Optional[str]:
+    """
+    Attempts to match a valid C++ operator symbol at the start of the given string.
+
+    The function checks whether the input string begins with any of the predefined C++
+    operator overload symbols (e.g., '==', '+', '[]', '->', etc.), prioritizing longer
+    matches first (e.g., '>>=' before '>').
+
+    Args:
+        string (str): The string to match against known operator symbols.
+
+    Returns:
+        Optional[str]: The matched operator symbol if found, otherwise None.
+    """
+    for op in SORTED_OPERATORS:
+        if string.startswith(op):
+            return op
+    return None

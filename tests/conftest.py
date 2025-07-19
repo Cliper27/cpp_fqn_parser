@@ -85,3 +85,71 @@ def parser_expected():
                template=None,
                constant=False,
                volatile=True)
+
+
+@pytest.fixture
+def operator_fqn_input() -> str:
+    return "one::two::operator*()"
+
+
+@pytest.fixture
+def operator_tokenizer_expected() -> List[Token]:
+    return [
+        Token('MEMBER', 'one'),
+        Token('SCOPE', '::'),
+        Token('MEMBER', 'two'),
+        Token('SCOPE', '::'),
+        Token('OPERATOR', 'operator*'),
+        Token('PARENTHESIS_START', '('),
+        Token('PARENTHESIS_END', ')'),
+    ]
+
+
+@pytest.fixture
+def operator_fqn_input_2() -> str:
+    return "one::two::operator []()"
+
+
+@pytest.fixture
+def operator_tokenizer_expected_2() -> List[Token]:
+    return [
+        Token('MEMBER', 'one'),
+        Token('SCOPE', '::'),
+        Token('MEMBER', 'two'),
+        Token('SCOPE', '::'),
+        Token('OPERATOR', 'operator[]'),
+        Token('PARENTHESIS_START', '('),
+        Token('PARENTHESIS_END', ')'),
+    ]
+
+
+@pytest.fixture
+def parser_operator_expected():
+    scopes = [
+        Scope(name="one", template=None),
+        Scope(name="two", template=None)
+    ]
+    return FQN(name="operator*",
+               full_name="one::two::operator*()",
+               return_type=None,
+               args=None,
+               scopes=scopes,
+               template=None,
+               constant=False,
+               volatile=False)
+
+
+@pytest.fixture
+def parser_operator_expected_2():
+    scopes = [
+        Scope(name="one", template=None),
+        Scope(name="two", template=None)
+    ]
+    return FQN(name="operator[]",
+               full_name="one::two::operator []()",
+               return_type=None,
+               args=None,
+               scopes=scopes,
+               template=None,
+               constant=False,
+               volatile=False)

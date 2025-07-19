@@ -196,12 +196,14 @@ class Parser:
         if self._match("WHITESPACE"):
             self._consume("WHITESPACE")
 
-        if not self._match("MEMBER"):
+        if self._match("OPERATOR"):
+            name: str = self._consume("OPERATOR").value
+            return name
+        elif not self._match("MEMBER"):
             _temp: Optional[Token] = self._peek()
             raise SyntaxError(f"Expected 'MEMBER', but found '{_temp.type_ if _temp else 'None'}'")
 
-        name: str = self._consume("MEMBER").value
-
+        name = self._consume("MEMBER").value
         return name
 
     def _parse_nested_templates(self) -> str:
