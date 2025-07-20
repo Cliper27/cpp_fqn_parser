@@ -2,9 +2,7 @@ from typing import List
 
 import pytest
 
-from src.token import Token
-from src.fqn import FQN
-from src.scope import Scope
+from src.cpp_fqn_parser import Token, FQN, Scope
 
 
 @pytest.fixture
