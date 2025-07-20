@@ -1,0 +1,27 @@
+[
+    {
+        "fqn": "one::two::three()",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "three"},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "three",
+            "full_name": "one::two::three()",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
+    }
+]

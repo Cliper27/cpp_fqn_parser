@@ -1,3 +1,5 @@
+from pathlib import Path
+import json
 from typing import List
 
 import pytest
@@ -5,38 +7,12 @@ import pytest
 from src.cpp_fqn_parser import Token, FQN, Scope
 
 
-@pytest.fixture
-def simple_fqn_input() -> str:
-    return "one::two::three()"
-
-
-@pytest.fixture
-def simple_tokenizer_expected() -> List[Token]:
-    return [
-        Token('MEMBER', 'one'),
-        Token('SCOPE', '::'),
-        Token('MEMBER', 'two'),
-        Token('SCOPE', '::'),
-        Token('MEMBER', 'three'),
-        Token('PARENTHESIS_START', '('),
-        Token('PARENTHESIS_END', ')'),
-    ]
-
-
-@pytest.fixture
-def simple_parser_expected():
-    scopes = [
-        Scope(name="one", template=None),
-        Scope(name="two", template=None)
-    ]
-    return FQN(name="three",
-               full_name="one::two::three()",
-               return_type=None,
-               args=None,
-               scopes=scopes,
-               template=None,
-               constant=False,
-               volatile=False)
+def pytest_generate_tests(metafunc):
+    if "fqn_dict" in metafunc.fixturenames:
+        path = Path(__file__).parent.parent / "test_data" / "fqns.json"
+        with path.open() as f:
+            fqns = json.load(f)
+        metafunc.parametrize("fqn_dict", fqns)
 
 
 @pytest.fixture
