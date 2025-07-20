@@ -38,6 +38,8 @@ class Tokenizer:
 
     Attributes:
         string (str): The input string to tokenize.
+
+    Private Attributes:
         __cursor (int): Internal cursor tracking the current position in the input string.
     """
 

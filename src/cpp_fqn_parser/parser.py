@@ -21,6 +21,8 @@ class Parser:
         string (str): The original input string.
         tokenizer (Tokenizer): Tokenizer instance processing the input.
         tokens (List[Token]): All parsed tokens from the input.
+
+    Private Attributes:
         __cursor (int): Current index in the token list (reverse parsing).
     """
     def __init__(self, string: str) -> None:
