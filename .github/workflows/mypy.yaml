@@ -24,4 +24,4 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run mypy
-        run: mypy .\src\cpp_fqn_parser\
+        run: mypy src\cpp_fqn_parser
