@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
 from .scope import Scope
-from .utils import to_dict
+from .utils import to_dict, check_keys
 
 
 @dataclass
@@ -54,11 +54,8 @@ class FQN:
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'FQN':
-        attrs = ["name", "full_name", "return_type", "args", "scopes", "template", "constant", "volatile"]
-        for attr in attrs:
-            if attr not in data:
-                raise KeyError(f"Missing key '{attr}'")
-
+        attrs: List[str] = ["name", "full_name", "return_type", "args", "scopes", "template", "constant", "volatile"]
+        check_keys(attrs, data)
         return FQN(name=data["name"],
                    full_name=data["full_name"],
                    return_type=data["return_type"],

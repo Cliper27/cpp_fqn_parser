@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List, Mapping
 
 
 def to_dict(obj: Any) -> Dict[str, Any]:
@@ -31,3 +31,19 @@ def to_dict(obj: Any) -> Dict[str, Any]:
             return inner_obj
 
     return {k: serialize(v) for k, v in vars(obj).items()}
+
+
+def check_keys(keys: List[str], data: Mapping[str, Any]) -> None:
+    """
+    Checks that all specified keys are present in the given mapping.
+
+    Args:
+        keys (List[str]): A list of keys to check for.
+        data (Mapping[str, Any]): The dictionary-like object to check.
+
+    Raises:
+        KeyError: If any key in `keys` is missing from `data`.
+    """
+    for key in keys:
+        if key not in data:
+            raise KeyError(f"Missing key '{key}'")

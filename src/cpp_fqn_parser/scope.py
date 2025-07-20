@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
-from .utils import to_dict
+from .utils import to_dict, check_keys
 
 
 @dataclass
@@ -24,10 +24,7 @@ class Scope:
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'Scope':
-        attrs = ["name", "template"]
-        for attr in attrs:
-            if attr not in data:
-                raise KeyError(f"Missing key '{attr}'")
-
+        attrs: List[str] = ["name", "template"]
+        check_keys(attrs, data)
         return Scope(name=data["name"],
                      template=data["template"])
