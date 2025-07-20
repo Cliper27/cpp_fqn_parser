@@ -1,5 +1,4 @@
-from src.parser import Parser
-from src.fqn import FQN
+from src.cpp_fqn_parser import Parser, FQN
 
 
 def test_simple_fqn(simple_fqn_input: str, simple_parser_expected: FQN) -> None:

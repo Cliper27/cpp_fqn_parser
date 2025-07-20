@@ -27,3 +27,8 @@ Scope(name='one_3hello0', template=None)
 Scope(name='tconstwo', template='<mytemplate>')
 
 ```
+
+## Installation
+```commandline
+pip install git+https://github.com/Cliper27/cpp_fqn_parser.git
+```
