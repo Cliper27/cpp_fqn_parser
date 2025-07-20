@@ -1,10 +1,11 @@
 from src.cpp_fqn_parser import Parser, FQN
 
 
-def test_simple_fqn(simple_fqn_input: str, simple_parser_expected: FQN) -> None:
-    parser: Parser = Parser(simple_fqn_input)
+def test_tokenizer_fqn(fqn_dict: dict):
+    parser: Parser = Parser(fqn_dict["fqn"])
     result: FQN = parser.parse()
-    assert result == simple_parser_expected
+    expected = FQN.from_dict(fqn_dict["parser"])
+    assert result == expected
 
 
 def test_fqn(fqn_input: str, parser_expected: FQN) -> None:

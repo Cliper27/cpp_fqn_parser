@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from .scope import Scope
+from .utils import to_dict, check_keys
 
 
 @dataclass
@@ -47,3 +48,19 @@ class FQN:
                 self.template == other.template and
                 self.constant == other.constant and
                 self.volatile == other.volatile)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return to_dict(self)
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> 'FQN':
+        attrs: List[str] = ["name", "full_name", "return_type", "args", "scopes", "template", "constant", "volatile"]
+        check_keys(attrs, data)
+        return FQN(name=data["name"],
+                   full_name=data["full_name"],
+                   return_type=data["return_type"],
+                   args=data["args"],
+                   scopes=[Scope.from_dict(scope) for scope in data["scopes"]],
+                   template=data["template"],
+                   constant=data["constant"],
+                   volatile=data["volatile"])
