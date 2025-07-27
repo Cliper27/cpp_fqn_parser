@@ -23,5 +23,92 @@
             "constant": false,
             "volatile": false
         }
+    },
+    {
+        "fqn": "int one_3hello0::tconstwo<mytemplate>::three(const four &) volatile",
+        "tokens": [
+            {"type_": "MEMBER", "value": "int"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "one_3hello0"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "tconstwo"},
+            {"type_": "TEMPLATE_START", "value": "<"},
+            {"type_": "MEMBER", "value": "mytemplate"},
+            {"type_": "TEMPLATE_END", "value": ">"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "three"},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "MEMBER", "value": "const"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "four"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "REFERENCE", "value": "&"},
+            {"type_": "PARENTHESIS_END", "value": ")"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "volatile"}
+        ],
+        "parser": {
+            "name": "three",
+            "full_name": "int one_3hello0::tconstwo<mytemplate>::three(const four &) volatile",
+            "return_type": "int",
+            "args": ["const four &"],
+            "scopes": [
+                {"name": "one_3hello0", "template": null},
+                {"name": "tconstwo", "template": "<mytemplate>"}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": true
+        }
+    },
+    {
+        "fqn": "one::two::operator*()",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "OPERATOR", "value": "operator*"},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "operator*",
+            "full_name": "one::two::operator*()",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
+    },
+    {
+        "fqn": "one::two::operator []()",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "OPERATOR", "value": "operator[]"},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "operator[]",
+            "full_name": "one::two::operator []()",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
     }
 ]
