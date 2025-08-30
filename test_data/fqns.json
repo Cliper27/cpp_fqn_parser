@@ -110,5 +110,123 @@
             "constant": false,
             "volatile": false
         }
+    },
+    {
+        "fqn": "const mytype1::type< template > one::two::three<mytemplate>(const four &)",
+        "tokens": [
+            {"type_": "MEMBER", "value": "const"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "mytype1"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "type"},
+            {"type_": "TEMPLATE_START", "value": "<"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "template"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "TEMPLATE_END", "value": ">"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "three"},
+            {"type_": "TEMPLATE_START", "value": "<"},
+            {"type_": "MEMBER", "value": "mytemplate"},
+            {"type_": "TEMPLATE_END", "value": ">"},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "MEMBER", "value": "const"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "MEMBER", "value": "four"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "REFERENCE", "value": "&"},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "three",
+            "full_name": "const mytype1::type< template > one::two::three<mytemplate>(const four &)",
+            "return_type": "const mytype1::type< template >",
+            "args": ["const four &"],
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": "<mytemplate>",
+            "constant": false,
+            "volatile": false
+        }
+    },
+    {
+        "fqn": "one::two::operator<< ()",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "OPERATOR", "value": "operator<<"},
+            {"type_": "WHITESPACE", "value": " "},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "operator<<",
+            "full_name": "one::two::operator<< ()",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
+    },
+    {
+        "fqn": "one::two::operator>=()",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "OPERATOR", "value": "operator>="},
+            {"type_": "PARENTHESIS_START", "value": "("},
+            {"type_": "PARENTHESIS_END", "value": ")"}
+        ],
+        "parser": {
+            "name": "operator>=",
+            "full_name": "one::two::operator>=()",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
+    },
+    {
+        "fqn": "one::two::operator>=",
+        "tokens": [
+            {"type_": "MEMBER", "value": "one"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "MEMBER", "value": "two"},
+            {"type_": "SCOPE", "value": "::"},
+            {"type_": "OPERATOR", "value": "operator>="}
+        ],
+        "parser": {
+            "name": "operator>=",
+            "full_name": "one::two::operator>=",
+            "return_type": null,
+            "args": null,
+            "scopes": [
+                {"name": "one", "template": null},
+                {"name": "two", "template": null}
+            ],
+            "template": null,
+            "constant": false,
+            "volatile": false
+        }
     }
 ]
